@@ -1,0 +1,10 @@
+build/
+dist/
+shots/
+.wrangler/
+site/downloads/
+tools/wheel.keystore
+*.apk
+*.idsig
+*_site.zip
+__pycache__/

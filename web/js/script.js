@@ -557,6 +557,13 @@ function makeScriptEnv(ctx){
     if (typeof x === 'object') return Object.keys(x).length;
     throw new Error('len 需要列表、字符串或字典');
   };
+  env.list = function(x){
+    if (x === undefined || x === null) return [];
+    if (Array.isArray(x)) return x.slice();
+    if (typeof x === 'string') return x.split('');
+    if (typeof x === 'object') return Object.keys(x);
+    throw new Error('list 需要列表、字符串或可迭代对象');
+  };
   env.str = scriptStr;
   env.int = function(x){
     if (x === true) return 1;
@@ -576,9 +583,47 @@ function makeScriptEnv(ctx){
     return v;
   };
   env.abs = Math.abs;
-  env.min = Math.min;
-  env.max = Math.max;
+  env.min = function(){
+    if (arguments.length === 1 && Array.isArray(arguments[0])) return Math.min.apply(null, arguments[0]);
+    return Math.min.apply(null, arguments);
+  };
+  env.max = function(){
+    if (arguments.length === 1 && Array.isArray(arguments[0])) return Math.max.apply(null, arguments[0]);
+    return Math.max.apply(null, arguments);
+  };
+  env.sum = function(list){
+    if (!Array.isArray(list)) throw new Error('sum 需要列表');
+    let n = 0;
+    list.forEach(function(x){ n += Number(x); });
+    return n;
+  };
+  env.round = function(n, digits){ return Math.round(Number(n) * Math.pow(10, Number(digits)||0)) / Math.pow(10, Number(digits)||0); };
+  env.sorted = function(list, reverse){
+    if (!Array.isArray(list)) throw new Error('sorted 需要列表');
+    const out = list.slice();
+    out.sort(function(a,b){ if (a === b) return 0; return a < b ? -1 : 1; });
+    if (reverse) out.reverse();
+    return out;
+  };
+  env.enumerate = function(list){
+    if (!Array.isArray(list) && typeof list !== 'string') throw new Error('enumerate 需要列表或字符串');
+    return Array.from(list).map(function(v,i){ return [i, v]; });
+  };
+  env.zip = function(){
+    const arrs = Array.prototype.slice.call(arguments);
+    const n = arrs.length ? Math.min.apply(null, arrs.map(function(a){ return a.length; })) : 0;
+    const out = [];
+    for (let i=0;i<n;i++) out.push(arrs.map(function(a){ return a[i]; }));
+    return out;
+  };
+  env.Exception = function(msg){ const e = new Error(msg || 'Exception'); e.pyType = 'Exception'; return e; };
+  env.ValueError = function(msg){ const e = new Error(msg || 'ValueError'); e.pyType = 'ValueError'; return e; };
+  env.TypeError = function(msg){ const e = new Error(msg || 'TypeError'); e.pyType = 'TypeError'; return e; };
+  env.IndexError = function(msg){ const e = new Error(msg || 'IndexError'); e.pyType = 'IndexError'; return e; };
   env.range = function(a,b,c){
+    if (b === undefined && c === undefined && (Array.isArray(a) || typeof a === 'string')){
+      a = a.length;
+    }
     let start=0, stop=a, step=1;
     if (b !== undefined){ start=a; stop=b; step=c===undefined?1:c; }
     if (!step) step=1;
@@ -1091,6 +1136,8 @@ const HELP_PAGES = {
     '<p>内置 <code>ring / goto / run / show / help / get_location / wait_urf</code>，不需要再 import。</p>' +
     '<p>支持变量、数字、字符串、列表、字典、索引、算术、<code>if/elif/else</code>、<code>for/while</code>、<code>break/continue</code>。</p>' +
     '<p>列表方法：<code>a.append(x)</code>、<code>a.pop()</code> / <code>a.pop(i)</code>、<code>a.remove(x)</code>、<code>a.index(x)</code>（从 0 开始，找不到会报错）。</p>' +
+    '<p><code>sum / max / min / sorted / round / enumerate / zip</code> 已内置；<code>raise Exception("x")</code> 可主动报错。</p>' +
+    '<p><code>list(x)</code> 复制列表/把字符串拆成字符；<code>range(列表)</code> 也可以直接取 0..长度-1。</p>' +
     '<p>字符串：<code>s.split()</code> 按空白拆，<code>s.split(",")</code> 按分隔符拆，<code>s.split(",", 1)</code> 限制次数；空分隔符会报错。</p>' +
     '<p>支持 <code>try / except / else / finally</code>；除以零会抛错，可被捕获。中文括号、引号、逗号、冒号、方括号【】可以直接写，会转成半角；字符串里的内容不改，f-string 花括号内也会转。</p>' +
     '<p>整数超过 21.47 亿时，用 8 位有效数字的科学计数法显示。</p>' +
@@ -1155,7 +1202,7 @@ function showScriptHelp(){
 
 const SCRIPT_EXAMPLE = 'goto("今天吃什么")\n\n# 抽一次，把结果显示在转盘上\nresult = run()\nshow("<CIR><color rgba(30,30,30,1)>结果：{result}</color></CIR>", 24, 120)\n';
 
-const BUILTIN_NAMES = new Set(['ring','goto','run','show','get_location','help','input','wait_until_read_finish','wait_urf','wait_until_autogo_finish','wait_uaf','True','False','None','len','str','int','float','abs','min','max','range','random','randint','print']);
+const BUILTIN_NAMES = new Set(['ring','goto','run','show','get_location','help','input','wait_until_read_finish','wait_urf','wait_until_autogo_finish','wait_uaf','list','sum','round','sorted','enumerate','zip','Exception','ValueError','TypeError','IndexError','True','False','None','len','str','int','float','abs','min','max','range','random','randint','print']);
 /* ---------- 运行状态 ---------- */
 function scriptStatus(show){
   let el = $('#scriptStatus');

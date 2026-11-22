@@ -1,14 +1,14 @@
-# 云海转盘 v0.2.8.7
+# 云海转盘 v0.2.8.9
 
 一个本地离线的抽奖转盘 Android App，支持导入 `.pwh`、分类、排序、避重、权重、自动跳转，以及 **系统 TTS / GPT-SoVITS 音色克隆** 朗读结果。
 
-- APK：`dist/云海转盘-v0.2.8.7.apk`（约 0.2 MB，可导入自定义字体）
+- APK：`dist/云海转盘-v0.2.8.9.apk`（约 0.2 MB，可导入自定义字体）
 - 服务器包：`server/`（打包为 `site/downloads/wheel-clone-server.zip`）
 - 下载页源码：`site/`（可部署到 Cloudflare Pages）
 
 ## 安装
 
-1. 把 `云海转盘-v0.2.8.7.apk` 传到手机并点开。
+1. 把 `云海转盘-v0.2.8.9.apk` 传到手机并点开。
 2. 如果系统提示，允许「安装未知应用」。
 3. 桌面名称：**云海转盘**。
 
@@ -37,6 +37,8 @@ APK 使用本地调试证书签名，适合自用；如需上架应用商店请�
 - **脚本 ring 引用**：`r = ring` 保存当前转盘引用，`goto` 后 `ring` 切换但 `r` 仍指旧转盘；每个访问过的转盘存为 `ring_转盘名`。
 - **脚本设置作用域**：脚本里改的 `_autogoto`、`_reset`、`ring.autogoto`、`ring.unique`、`ring.unable` 只在本次运行有效，结束后恢复原设置。
 - **自动脚本（全局）**：设置 → 自动脚本，全 App 只有一份脚本；访问 `ring` 或调用 `run()` 前必须先 `goto("转盘名")`；脚本内对转盘、设置、抽奖记录、脚本变量的修改在结束后全部回退，完全无痕。支持 goto/run/ring.unique/ring.reset/ring.unable/ring.enable/ring.set/ring.index/show/help、`def` 函数、`try/except/finally`（参数、默认参数、关键字参数、return）；`ring` 指当前转盘；变量与选项统计可查看、清空。变量名/函数名支持中文，不能占用内置名。
+- **Python 兼容**：新增 `raise`、`Exception/ValueError`、`sum/max/min/sorted/round/enumerate/zip`，切片、list、range(list)，循环上限提高。
+- **list / 切片**：`list(x)` 复制列表或拆字符串；`a[start:end:step]` 切片；`range(列表)` 返回下标 0..长度-1。
 - **字符串方法**：`s.split()` / `s.split(sep)` / `s.split(sep, maxsplit)`，另有 strip、replace、join 等。
 - **列表方法**：脚本支持 `list.append` / `list.pop` / `list.remove` / `list.index`（含负索引、start/end）。
 - **脚本扩展**：`import time`（sleep/时间）、`import turtle`（在应用界面上画图）、`import random`（随机数）、`import requests`/`import request`（HTTP）、`import tkinter as tk`（应用内新窗口）；`print()` 底部提示 2 秒，`input()` 全屏输入，必须确认后继续（不可取消）。
@@ -108,7 +110,7 @@ cd /root/workspace/wheel-app
 ./build.sh
 ```
 
-产物：`dist/云海转盘-v0.2.8.7.apk`
+产物：`dist/云海转盘-v0.2.8.9.apk`
 
 - `web/`：HTML/CSS/JS 界面
 - `android/`：WebView 外壳、TTS、文件选择、字体/音频上传、持久化

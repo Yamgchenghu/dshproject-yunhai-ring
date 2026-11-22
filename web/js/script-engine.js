@@ -146,9 +146,21 @@ class PyExprParser {
         this.expectOp(')');
         e = { t:'call', fn:e, args:args, kwargs:kwargs };
       } else if (this.eatOp('[')){
-        const idx = this.parseOr();
-        this.expectOp(']');
-        e = { t:'index', obj:e, index:idx };
+        let start = null;
+        if (!this.isOp(':') && !this.isOp(']')) start = this.parseOr();
+        if (this.eatOp(':')){
+          let end = null, step = null;
+          if (!this.isOp(':') && !this.isOp(']')) end = this.parseOr();
+          if (this.eatOp(':')){
+            if (!this.isOp(']')) step = this.parseOr();
+          }
+          this.expectOp(']');
+          e = { t:'slice', obj:e, start:start, end:end, step:step };
+        } else {
+          if (start === null) throw new Error('这里需要一个值');
+          this.expectOp(']');
+          e = { t:'index', obj:e, index:start };
+        }
       } else if (this.eatOp('.')){
         const n = this.next();
         if (n.t !== 'name') throw new Error('属性名不合法');
@@ -490,6 +502,8 @@ function parsePyStmt(lines, i, indent){
   }
   if (text === 'return') return { node:{ t:'return', value:null, line:no }, next:i+1 };
   if (/^return\s+/.test(text)) return { node:{ t:'return', value:parsePyExpr(text.slice(7).trim()), line:no }, next:i+1 };
+  if (text === 'raise') return { node:{ t:'raise', value:null, line:no }, next:i+1 };
+  if (/^raise\s+/.test(text)) return { node:{ t:'raise', value:parsePyExpr(text.slice(6).trim()), line:no }, next:i+1 };
   if (/^if\s+/.test(text) && text.endsWith(':')){
     const condText = text.slice(2, -1).trim();
     const branches = [];
@@ -815,6 +829,33 @@ async function evalPyExpr(node, ctx){
       }
       return obj[node.name];
     }
+    case 'slice': {
+      const obj = await evalPyExpr(node.obj, ctx);
+      if (!Array.isArray(obj) && typeof obj !== 'string') throw new Error('只有列表或字符串可以切片');
+      const len = obj.length;
+      let start = node.start == null ? 0 : Number(await evalPyExpr(node.start, ctx));
+      let end = node.end == null ? len : Number(await evalPyExpr(node.end, ctx));
+      let step = node.step == null ? 1 : Number(await evalPyExpr(node.step, ctx));
+      if (!Number.isInteger(start) || !Number.isInteger(end) || !Number.isInteger(step)) throw new Error('切片参数需要整数');
+      if (step === 0) throw new Error('切片步长不能为 0');
+      let out = [];
+      if (step > 0){
+        if (start < 0) start += len;
+        if (end < 0) end += len;
+        start = Math.max(0, Math.min(len, start));
+        end = Math.max(0, Math.min(len, end));
+        for (let i = start; i < end; i += step) out.push(obj[i]);
+      } else {
+        if (start < 0) start += len;
+        if (end < 0) end += len;
+        start = Math.min(len - 1, start);
+        if (node.start == null) start = len - 1;
+        end = Math.max(-1, end);
+        if (node.end == null) end = -1;
+        for (let i = start; i > end; i += step) out.push(obj[i]);
+      }
+      return typeof obj === 'string' ? out.join('') : out;
+    }
     case 'index': {
       const obj = await evalPyExpr(node.obj, ctx);
       const idx = await evalPyExpr(node.index, ctx);
@@ -1020,6 +1061,12 @@ async function execPyNode(node, ctx){
       if (!ctx.funcDepth) throw new Error('return 只能写在函数里');
       throw new PyReturn(node.value === null ? null : await evalPyExpr(node.value, ctx));
     }
+    case 'raise': {
+      if (node.value === null) throw new Error('脚本主动抛出异常');
+      const v = await evalPyExpr(node.value, ctx);
+      if (v instanceof Error) throw v;
+      throw new Error(String(v));
+    }
     case 'if': {
       for (const br of node.branches){
         if (pyTruthy(await evalPyExpr(br.cond, ctx))){
@@ -1033,7 +1080,7 @@ async function execPyNode(node, ctx){
       let guard = 0;
       while (pyTruthy(await evalPyExpr(node.cond, ctx))){
         ctx.check();
-        if (++guard > 5000) throw new Error('while 循环超过 5000 次');
+        if (++guard > 200000) throw new Error('while 循环超过 200000 次');
         try { await execPyBlock(node.body, ctx); }
         catch(e){ if (e === PY_BREAK) break; if (e === PY_CONTINUE) continue; throw e; }
       }

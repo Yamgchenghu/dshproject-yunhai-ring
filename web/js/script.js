@@ -201,6 +201,11 @@ function renderScript(){
   const lines = $('#scriptLines');
   function paintLines(){
     const n = ta.value.split('\n').length;
+    const wrap = ta.closest('.code-wrap');
+    if (wrap){
+      const gutter = Math.max(30, 10 + String(n).length * 6);
+      wrap.style.setProperty('--line-gutter', gutter + 'px');
+    }
     let html = '';
     for (let i = 1; i <= n; i++) html += '<div>' + i + '</div>';
     lines.innerHTML = html;

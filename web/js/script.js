@@ -179,10 +179,12 @@ function renderScript(){
     '<div class="form-page">' +
       '<p class="small muted" style="margin:4px 4px 12px;line-height:1.6">全局只有一份脚本。使用 <b>ring</b> 或 <b>run()</b> 前必须先 <b>goto("转盘名")</b>；脚本内修改会在结束后全部回退。</p>' +
       '<div class="code-wrap">' +
+        '<div class="code-lines" aria-hidden="true"><div id="scriptLines"></div></div>' +
         '<pre class="code-highlight" id="scriptHighlight" aria-hidden="true"><code id="scriptHighlightCode"></code></pre>' +
         '<textarea id="scriptCode" class="script-code" wrap="off" spellcheck="false" placeholder="' + esc(SCRIPT_EXAMPLE) + '">' + esc(db.globalScript || '') + '</textarea>' +
+        '<button class="code-pan-btn left" data-pan="-1" aria-label="向左半屏">‹</button>' +
+        '<button class="code-pan-btn right" data-pan="1" aria-label="向右半屏">›</button>' +
       '</div>' +
-      '<div class="code-pan"><button data-pan="-1">◀ 半屏</button><span>长行不换行</span><button data-pan="1">半屏 ▶</button></div>' +
       '<div class="script-hint">' + ICON.info + '<span>支持 def / try / if / for 等；代码区自动缩进、分色高亮。点右上角「运行」开始。</span></div>' +
       '<button class="btn primary block" data-action="run" style="height:54px;margin-top:12px">' + ICON.play + ' 运行脚本</button>' +
 
@@ -198,10 +200,23 @@ function renderScript(){
   const ta = $('#scriptCode');
   const pre = $('#scriptHighlight');
   const hcode = $('#scriptHighlightCode');
-  function paint(){
-    hcode.innerHTML = highlightScriptCode(ta.value);
+  const lines = $('#scriptLines');
+  function paintLines(){
+    const n = ta.value.split('\n').length;
+    let html = '';
+    for (let i = 1; i <= n; i++) html += '<div>' + i + '</div>';
+    lines.innerHTML = html;
+  }
+  function syncScroll(){
     pre.scrollTop = ta.scrollTop;
     pre.scrollLeft = ta.scrollLeft;
+    if (lines) lines.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
+  }
+  function paint(){
+    hcode.innerHTML = highlightScriptCode(ta.value);
+    paintLines();
+    syncScroll();
+    updatePan();
   }
   function grow(){ ta.style.height = 'auto'; ta.style.height = Math.min(560, Math.max(220, ta.scrollHeight + 4)) + 'px'; }
   function changed(){
@@ -219,15 +234,24 @@ function renderScript(){
     grow();
   }
   ta.addEventListener('input', changed);
-  ta.addEventListener('scroll', function(){ pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; });
-  $$('.code-pan [data-pan]').forEach(function(b){
+  function updatePan(){
+    const max = ta.scrollWidth - ta.clientWidth;
+    const has = max > 2;
+    const left = $('.code-pan-btn.left');
+    const right = $('.code-pan-btn.right');
+    if (left) left.style.display = has && ta.scrollLeft > 2 ? 'flex' : 'none';
+    if (right) right.style.display = has && ta.scrollLeft < max - 2 ? 'flex' : 'none';
+  }
+  ta.addEventListener('scroll', function(){ syncScroll(); updatePan(); });
+  $$('.code-pan-btn[data-pan]').forEach(function(b){
     b.onclick = function(){
       const dir = Number(b.getAttribute('data-pan')) || 1;
       ta.scrollLeft += dir * Math.max(80, ta.clientWidth * 0.5);
-      pre.scrollLeft = ta.scrollLeft;
-      pre.scrollTop = ta.scrollTop;
+      syncScroll();
+      updatePan();
     };
   });
+  window.addEventListener('resize', updatePan);
   ta.addEventListener('keydown', function(e){
     if (e.isComposing) return;
     if (e.key === 'Tab'){

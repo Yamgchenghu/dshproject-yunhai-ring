@@ -2,7 +2,7 @@
 'use strict';
 
 const NATIVE = (typeof window.Android !== 'undefined' && window.Android) ? window.Android : null;
-const APP_VERSION = '0.2.8.13';
+const APP_VERSION = '0.2.8.14';
 const DB_KEY = 'wheelapp.db.v2';
 const PALETTE = ['#E8544A','#F08A3C','#F2C94C','#8CC152','#35BFA3','#2FA8DA','#4C7FE0','#6C63CE','#A45FCB','#D95AA0','#E05A6B','#B7CE3D'];
 const SYSTEM_FONT = '-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Noto Sans SC","Source Han Sans SC",system-ui,sans-serif';

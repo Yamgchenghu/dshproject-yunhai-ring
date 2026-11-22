@@ -908,6 +908,13 @@ async function getPyTargetValue(target, ctx){
   if (target.t === 'index'){
     const obj = await evalPyExpr(target.obj, ctx);
     const idx = await evalPyExpr(target.index, ctx);
+    if (Array.isArray(obj) || typeof obj === 'string'){
+      let n = Number(idx);
+      if (!Number.isInteger(n)) throw new Error('索引需要整数：' + idx);
+      if (n < 0) n += obj.length;
+      if (n < 0 || n >= obj.length) throw new Error('索引越界：' + idx);
+      return obj[n];
+    }
     return obj[idx];
   }
   throw new Error('无法读取赋值目标');

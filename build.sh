@@ -36,7 +36,7 @@ if [ ! -f "$KEYSTORE" ]; then
     -alias wheel -dname "CN=Wheel App,O=DSH,C=CN" -keyalg RSA -keysize 2048 -validity 20000 >/dev/null 2>&1
 fi
 
-OUT="$ROOT/dist/云海转盘-v0.2.8.13.apk"
+OUT="$ROOT/dist/云海转盘-v0.2.8.14.apk"
 echo "==> sign"
 "$BT/apksigner" sign --ks "$KEYSTORE" --ks-pass pass:wheelapp --key-pass pass:wheelapp \
   --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \

@@ -2090,7 +2090,7 @@ public class MainActivity extends Activity {
         public boolean isChineseLocale() { return "zh".equals(Locale.getDefault().getLanguage()); }
 
         @JavascriptInterface
-        public String appVersion() { return "0.2.8.13"; }
+        public String appVersion() { return "0.2.8.14"; }
 
         @JavascriptInterface
         public String loadData() {

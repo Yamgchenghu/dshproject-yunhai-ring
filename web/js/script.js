@@ -182,10 +182,8 @@ function renderScript(){
         '<div class="code-lines" aria-hidden="true"><div id="scriptLines"></div></div>' +
         '<pre class="code-highlight" id="scriptHighlight" aria-hidden="true"><code id="scriptHighlightCode"></code></pre>' +
         '<textarea id="scriptCode" class="script-code" wrap="off" spellcheck="false" placeholder="' + esc(SCRIPT_EXAMPLE) + '">' + esc(db.globalScript || '') + '</textarea>' +
-        '<button class="code-pan-btn left" data-pan="-1" aria-label="向左半屏">‹</button>' +
-        '<button class="code-pan-btn right" data-pan="1" aria-label="向右半屏">›</button>' +
       '</div>' +
-      '<div class="script-hint">' + ICON.info + '<span>支持 def / try / if / for 等；代码区自动缩进、分色高亮。点右上角「运行」开始。</span></div>' +
+      '<div class="script-hint">' + ICON.info + '<span>支持 def / try / if / for 等；长行不换行，双指左右滑动可跳半屏。点右上角「运行」开始。</span></div>' +
       '<button class="btn primary block" data-action="run" style="height:54px;margin-top:12px">' + ICON.play + ' 运行脚本</button>' +
 
       '<div class="section-label">变量统计</div>' +
@@ -216,7 +214,6 @@ function renderScript(){
     hcode.innerHTML = highlightScriptCode(ta.value);
     paintLines();
     syncScroll();
-    updatePan();
   }
   function grow(){ ta.style.height = 'auto'; ta.style.height = Math.min(560, Math.max(220, ta.scrollHeight + 4)) + 'px'; }
   function changed(){
@@ -234,24 +231,36 @@ function renderScript(){
     grow();
   }
   ta.addEventListener('input', changed);
-  function updatePan(){
-    const max = ta.scrollWidth - ta.clientWidth;
-    const has = max > 2;
-    const left = $('.code-pan-btn.left');
-    const right = $('.code-pan-btn.right');
-    if (left) left.style.display = has && ta.scrollLeft > 2 ? 'flex' : 'none';
-    if (right) right.style.display = has && ta.scrollLeft < max - 2 ? 'flex' : 'none';
+  ta.addEventListener('scroll', syncScroll);
+  let twoStart = null, twoLastX = 0;
+  function touchX(e){
+    if (e.touches.length < 2) return null;
+    return (e.touches[0].clientX + e.touches[1].clientX) / 2;
   }
-  ta.addEventListener('scroll', function(){ syncScroll(); updatePan(); });
-  $$('.code-pan-btn[data-pan]').forEach(function(b){
-    b.onclick = function(){
-      const dir = Number(b.getAttribute('data-pan')) || 1;
-      ta.scrollLeft += dir * Math.max(80, ta.clientWidth * 0.5);
-      syncScroll();
-      updatePan();
-    };
-  });
-  window.addEventListener('resize', updatePan);
+  ta.addEventListener('touchstart', function(e){
+    if (e.touches.length === 2){
+      const x = touchX(e);
+      if (x === null) return;
+      twoStart = x; twoLastX = x;
+    }
+  }, { passive: true });
+  ta.addEventListener('touchmove', function(e){
+    if (twoStart !== null && e.touches.length === 2){
+      const x = touchX(e);
+      if (x !== null) twoLastX = x;
+      e.preventDefault();
+    }
+  }, { passive: false });
+  function endTwo(){
+    if (twoStart === null) return;
+    const dx = twoLastX - twoStart;
+    twoStart = null;
+    if (Math.abs(dx) < 28) return;
+    ta.scrollLeft += dx < 0 ? ta.clientWidth * 0.5 : -ta.clientWidth * 0.5;
+    syncScroll();
+  }
+  ta.addEventListener('touchend', function(e){ if (e.touches.length === 0) endTwo(); });
+  ta.addEventListener('touchcancel', function(){ twoStart = null; });
   ta.addEventListener('keydown', function(e){
     if (e.isComposing) return;
     if (e.key === 'Tab'){

@@ -645,6 +645,59 @@ function pyBinOp(op, a, b){
   }
 }
 
+function pyStringMethod(str, name){
+  if (name === 'split'){
+    return function(){
+      if (arguments.length > 2) throw new Error('split 最多 2 个参数');
+      const hasSep = arguments.length >= 1 && arguments[0] !== undefined && arguments[0] !== null;
+      const sep = hasSep ? String(arguments[0]) : null;
+      let max = arguments.length >= 2 ? Number(arguments[1]) : -1;
+      if (!Number.isInteger(max)) throw new Error('split 的 maxsplit 需要整数');
+      if (sep === '') throw pyError('ValueError', 'split 分隔符不能为空');
+      let parts;
+      if (sep === null){
+        const t = str.trim();
+        if (!t) return [];
+        parts = t.split(/\s+/);
+      } else {
+        parts = str.split(sep);
+      }
+      if (max >= 0 && parts.length > max + 1){
+        const head = parts.slice(0, max);
+        head.push(parts.slice(max).join(sep === null ? ' ' : sep));
+        return head;
+      }
+      return parts;
+    };
+  }
+  if (name === 'strip') return function(){ return str.trim(); };
+  if (name === 'lstrip') return function(){ return str.replace(/^\s+/, ''); };
+  if (name === 'rstrip') return function(){ return str.replace(/\s+$/, ''); };
+  if (name === 'lower') return function(){ return str.toLowerCase(); };
+  if (name === 'upper') return function(){ return str.toUpperCase(); };
+  if (name === 'startswith') return function(x){ return str.startsWith(String(x)); };
+  if (name === 'endswith') return function(x){ return str.endsWith(String(x)); };
+  if (name === 'find') return function(x){ return str.indexOf(String(x)); };
+  if (name === 'count') return function(x){ return str.split(String(x)).length - 1; };
+  if (name === 'replace'){
+    return function(a, b, n){
+      a = String(a); b = String(b);
+      if (n === undefined || n < 0) return str.split(a).join(b);
+      let count = Number(n);
+      if (!Number.isInteger(count) || count < 0) throw new Error('replace 次数需要非负整数');
+      const parts = str.split(a);
+      return parts.slice(0, count + 1).join(b) + (parts.length > count + 1 ? a + parts.slice(count + 1).join(a) : '');
+    };
+  }
+  if (name === 'join'){
+    return function(list){
+      if (!Array.isArray(list)) throw new Error('join 需要列表');
+      return list.map(function(x){ return String(x); }).join(str);
+    };
+  }
+  return null;
+}
+
 function pyListMethod(arr, name){
   if (name === 'append'){
     return function(){
@@ -756,6 +809,10 @@ async function evalPyExpr(node, ctx){
         const m = pyListMethod(obj, node.name);
         if (m) return m;
       }
+      if (typeof obj === 'string'){
+        const m = pyStringMethod(obj, node.name);
+        if (m) return m;
+      }
       return obj[node.name];
     }
     case 'index': {
@@ -776,6 +833,8 @@ async function evalPyExpr(node, ctx){
         if (self === null || self === undefined) throw new Error('不能调用空值的 ' + node.fn.name);
         if (Array.isArray(self)){
           fn = pyListMethod(self, node.fn.name) || self[node.fn.name];
+        } else if (typeof self === 'string'){
+          fn = pyStringMethod(self, node.fn.name) || self[node.fn.name];
         } else {
           fn = self[node.fn.name];
         }

@@ -1091,6 +1091,7 @@ const HELP_PAGES = {
     '<p>内置 <code>ring / goto / run / show / help / get_location / wait_urf</code>，不需要再 import。</p>' +
     '<p>支持变量、数字、字符串、列表、字典、索引、算术、<code>if/elif/else</code>、<code>for/while</code>、<code>break/continue</code>。</p>' +
     '<p>列表方法：<code>a.append(x)</code>、<code>a.pop()</code> / <code>a.pop(i)</code>、<code>a.remove(x)</code>、<code>a.index(x)</code>（从 0 开始，找不到会报错）。</p>' +
+    '<p>字符串：<code>s.split()</code> 按空白拆，<code>s.split(",")</code> 按分隔符拆，<code>s.split(",", 1)</code> 限制次数；空分隔符会报错。</p>' +
     '<p>支持 <code>try / except / else / finally</code>；除以零会抛错，可被捕获。中文括号、引号、逗号、冒号、方括号【】可以直接写，会转成半角；字符串里的内容不改，f-string 花括号内也会转。</p>' +
     '<p>整数超过 21.47 亿时，用 8 位有效数字的科学计数法显示。</p>' +
     '<p>代码区自动缩进；函数名、括号层级、字符串、数字和关键字会分色高亮。</p>' +

@@ -1,14 +1,14 @@
-# 云海转盘 v0.2.8.9
+# 云海转盘 v0.2.8.10
 
 一个本地离线的抽奖转盘 Android App，支持导入 `.pwh`、分类、排序、避重、权重、自动跳转，以及 **系统 TTS / GPT-SoVITS 音色克隆** 朗读结果。
 
-- APK：`dist/云海转盘-v0.2.8.9.apk`（约 0.2 MB，可导入自定义字体）
+- APK：`dist/云海转盘-v0.2.8.10.apk`（约 0.2 MB，可导入自定义字体）
 - 服务器包：`server/`（打包为 `site/downloads/wheel-clone-server.zip`）
 - 下载页源码：`site/`（可部署到 Cloudflare Pages）
 
 ## 安装
 
-1. 把 `云海转盘-v0.2.8.9.apk` 传到手机并点开。
+1. 把 `云海转盘-v0.2.8.10.apk` 传到手机并点开。
 2. 如果系统提示，允许「安装未知应用」。
 3. 桌面名称：**云海转盘**。
 
@@ -49,6 +49,7 @@ APK 使用本地调试证书签名，适合自用；如需上架应用商店请�
 - **本地 TTS 文件**：设置 → 数据 → 本地 TTS 文件，可试听、替换、删除；按类型提供重新生成/导出。
 - **打印弹幕**：`print()` 在底部叠加显示，最多同时 5 条；更多的进入缓存队列，等前面的 2 秒结束后依次展示。
 - **系统 TTS 缓存**：支持全文和分段缓存，30 天未用清理。
+- **脚本编辑器**：长行不自动换行，用「半屏」按钮左右查看，避免横向滑动干扰复制粘贴。
 - **脚本编辑器**：自动缩进；函数名/括号层级/字符串/整数/浮点/关键字分色高亮；支持中文括号、引号、逗号、冒号自动转译；`try/except/else/finally`。
 - **脚本帮助**：`help()` 弹窗支持 ring / Python / turtle / time / random / request / tkinter 分页；`ring` 是内置的，不需要 `from randomring import *`。
 - **脚本绘图**：`show("...", x, y)` 支持 `<RET 填充 边框宽 边框色 圆角>文字</RET>`、`<CIR 填充 边框宽 边框色>文字</CIR>`（参数同 RET 前三个，圆角固定半宽）、`<color rgba>文字</color>`，返回句柄可 `change_str / invisible / visible / delete`；变量变化时自动刷新。
@@ -110,7 +111,7 @@ cd /root/workspace/wheel-app
 ./build.sh
 ```
 
-产物：`dist/云海转盘-v0.2.8.9.apk`
+产物：`dist/云海转盘-v0.2.8.10.apk`
 
 - `web/`：HTML/CSS/JS 界面
 - `android/`：WebView 外壳、TTS、文件选择、字体/音频上传、持久化

@@ -180,8 +180,9 @@ function renderScript(){
       '<p class="small muted" style="margin:4px 4px 12px;line-height:1.6">全局只有一份脚本。使用 <b>ring</b> 或 <b>run()</b> 前必须先 <b>goto("转盘名")</b>；脚本内修改会在结束后全部回退。</p>' +
       '<div class="code-wrap">' +
         '<pre class="code-highlight" id="scriptHighlight" aria-hidden="true"><code id="scriptHighlightCode"></code></pre>' +
-        '<textarea id="scriptCode" class="script-code" spellcheck="false" placeholder="' + esc(SCRIPT_EXAMPLE) + '">' + esc(db.globalScript || '') + '</textarea>' +
+        '<textarea id="scriptCode" class="script-code" wrap="off" spellcheck="false" placeholder="' + esc(SCRIPT_EXAMPLE) + '">' + esc(db.globalScript || '') + '</textarea>' +
       '</div>' +
+      '<div class="code-pan"><button data-pan="-1">◀ 半屏</button><span>长行不换行</span><button data-pan="1">半屏 ▶</button></div>' +
       '<div class="script-hint">' + ICON.info + '<span>支持 def / try / if / for 等；代码区自动缩进、分色高亮。点右上角「运行」开始。</span></div>' +
       '<button class="btn primary block" data-action="run" style="height:54px;margin-top:12px">' + ICON.play + ' 运行脚本</button>' +
 
@@ -219,6 +220,14 @@ function renderScript(){
   }
   ta.addEventListener('input', changed);
   ta.addEventListener('scroll', function(){ pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; });
+  $$('.code-pan [data-pan]').forEach(function(b){
+    b.onclick = function(){
+      const dir = Number(b.getAttribute('data-pan')) || 1;
+      ta.scrollLeft += dir * Math.max(80, ta.clientWidth * 0.5);
+      pre.scrollLeft = ta.scrollLeft;
+      pre.scrollTop = ta.scrollTop;
+    };
+  });
   ta.addEventListener('keydown', function(e){
     if (e.isComposing) return;
     if (e.key === 'Tab'){

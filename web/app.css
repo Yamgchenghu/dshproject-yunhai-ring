@@ -361,9 +361,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .help-page{min-height:220px;max-height:52vh;overflow-y:auto;padding-right:2px}
 /* code editor with syntax highlight */
 .code-wrap{position:relative;background:#1E1E21;border:1px solid #2F2F34;border-radius:18px;overflow:hidden}
-.code-highlight{position:absolute;inset:0;margin:0;padding:14px;overflow:hidden;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;color:#ECECE6;z-index:0;pointer-events:none}
+.code-highlight{position:absolute;inset:0;margin:0;padding:14px;overflow:hidden;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.55;white-space:pre;overflow-wrap:normal;word-break:normal;tab-size:4;color:#ECECE6;z-index:0;pointer-events:none}
 .code-highlight code{font:inherit;white-space:inherit;display:block}
-.script-code{position:relative;z-index:1;width:100%;min-height:220px;background:transparent !important;color:transparent !important;-webkit-text-fill-color:transparent;caret-color:#F7F7F2;border:none !important;border-radius:18px;padding:14px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.55;resize:none;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4;box-sizing:border-box;overflow:auto;scrollbar-width:none}
+.script-code{position:relative;z-index:1;width:100%;min-height:220px;background:transparent !important;color:transparent !important;-webkit-text-fill-color:transparent;caret-color:#F7F7F2;border:none !important;border-radius:18px;padding:14px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12.5px;line-height:1.55;resize:none;outline:none;white-space:pre;overflow-wrap:normal;word-break:normal;tab-size:4;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;scrollbar-width:none}
 .script-code::-webkit-scrollbar{display:none}
 .script-code::placeholder{color:#7A7A80 !important;-webkit-text-fill-color:#7A7A80}
 .script-code::selection{background:rgba(90,170,255,.38);color:transparent !important}
@@ -447,3 +447,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .key-wrap{display:flex;align-items:center;gap:8px}
 .key-wrap input{flex:1;min-width:0}
 .key-toggle{flex:none;font-size:11px;font-weight:700;color:var(--sub);background:var(--pill);border-radius:8px;padding:6px 9px}
+
+.code-pan{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.code-pan button{flex:none;font-size:12px;font-weight:700;color:var(--sub);background:var(--pill);border-radius:9px;padding:8px 10px}
+.code-pan span{font-size:11px;color:var(--sub);opacity:.7}
